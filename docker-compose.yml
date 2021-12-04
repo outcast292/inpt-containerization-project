@@ -1,0 +1,38 @@
+version: "3"
+services:
+  app:
+    build: .
+    container_name: "app"
+    volumes:
+      - ".:/var/www/html"
+    networks:
+      - internal_network
+    depends_on:
+      - mysql_service
+    ports:
+      - 80:80
+  mysql_service:
+    image: mysql
+    volumes:
+      - "./sql/init.sql:/docker-entrypoint-initdb.d/1.sql"
+      - "db_data:/var/lib/mysql"
+    networks:
+      - internal_network
+    env_file:
+      - ".env"
+  php_my_admin:
+    image: phpmyadmin
+    networks:
+      - internal_network
+    depends_on:
+      - mysql_service
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      - PMA_HOST=mysql_service
+networks:
+  internal_network:
+    driver: bridge
+volumes:
+  db_data: null
